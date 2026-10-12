@@ -1,0 +1,484 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+    content="width=device-width, initial-scale=1.0">
+
+    <title>Employee Records</title>
+
+    <style>
+
+        body{
+            font-family:Arial;
+            padding:30px;
+            background:#f4f4f4;
+        }
+
+        h1{
+            text-align:center;
+            margin-bottom:20px;
+        }
+
+        .top-bar{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            margin-bottom:20px;
+            gap:10px;
+        }
+
+        input{
+            width:100%;
+            padding:10px;
+            border:1px solid #ccc;
+            border-radius:5px;
+            font-size:15px;
+        }
+
+        table{
+            width:100%;
+            border-collapse:collapse;
+            background:white;
+        }
+
+        th, td{
+            border:1px solid #ccc;
+            padding:10px;
+            text-align:center;
+        }
+
+        th{
+            background:#007bff;
+            color:white;
+        }
+
+        tr:nth-child(even){
+            background:#f2f2f2;
+        }
+
+        button{
+            padding:8px 12px;
+            border:none;
+            cursor:pointer;
+            color:white;
+            border-radius:4px;
+        }
+
+        .back-btn{
+            background:green;
+        }
+
+        .edit-btn{
+            background:orange;
+        }
+
+        .delete-btn{
+            background:red;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="top-bar">
+
+    <a href="index.html">
+
+        <button class="back-btn">
+            Back
+        </button>
+
+    </a>
+
+
+
+
+
+    <input
+    type="text"
+    id="searchInput"
+    placeholder="Search Employee by Name or ID"
+    onkeyup="searchEmployee()">
+
+</div>
+
+
+
+
+
+<h1>Employee Records</h1>
+
+
+
+<input
+type="text"
+id="searchInput"
+placeholder="Search Employee..."
+onkeyup="searchEmployee()"
+
+style="
+width:300px;
+padding:10px;
+margin-bottom:20px;
+border:1px solid #ccc;
+border-radius:5px;
+">
+`
+
+
+
+<table>
+
+    <thead>
+
+        
+<tr class="employeeRow">
+
+
+
+            <th>Name</th>
+            <th>ID</th>
+            <th>Designation</th>
+            <th>Joining Date</th>
+            <th>Salary</th>
+            <th>HRA %</th>
+            <th>DA %</th>
+            <th>Allowance %</th>
+            <th>ESI %</th>
+            <th>PF %</th>
+            <th>Actions</th>
+
+        </tr>
+
+    </thead>
+
+
+
+
+
+    <tbody id="employeeTable">
+
+    </tbody>
+
+</table>
+
+
+
+
+
+<script>
+
+let allEmployees = [];
+
+
+
+
+
+// LOAD EMPLOYEES
+
+async function loadEmployees() {
+
+    try {
+
+        const response =
+        await fetch("http://localhost:5000/employees");
+
+        allEmployees = await response.json();
+
+        displayEmployees(allEmployees);
+
+    }
+
+    catch(error){
+
+        console.log(error);
+
+        alert("Failed To Load Employees");
+    }
+}
+
+
+
+
+
+
+// DISPLAY EMPLOYEES
+
+function displayEmployees(employees) {
+
+    const table =
+    document.getElementById("employeeTable");
+
+    table.innerHTML = "";
+
+
+
+
+
+    employees.forEach(emp => {
+
+        table.innerHTML += `
+
+        <tr>
+
+            <td>${emp.employeeName}</td>
+
+            <td>${emp.employeeId}</td>
+
+            <td>${emp.designation}</td>
+
+            <td>${emp.joiningDate}</td>
+
+            <td>${emp.basicSalary}</td>
+
+            <td>${emp.hra}</td>
+
+            <td>${emp.da}</td>
+
+            <td>${emp.allowances}</td>
+
+            <td>${emp.esi}</td>
+
+            <td>${emp.pf}</td>
+
+
+
+
+
+            <td>
+
+                <button
+                class="edit-btn"
+                onclick='editEmployee("${emp._id}")'>
+
+                    Edit
+
+                </button>
+
+
+
+
+
+                <button
+                class="delete-btn"
+                onclick='deleteEmployee("${emp._id}")'>
+
+                    Delete
+
+                </button>
+
+            </td>
+
+        </tr>
+
+        `;
+    });
+}
+
+
+
+
+
+
+
+// EDIT EMPLOYEE
+
+async function editEmployee(id) {
+
+    try {
+
+        const response =
+        await fetch(`http://localhost:5000/employee/${id}`);
+
+        const emp = await response.json();
+
+
+
+
+
+        // STORE DATA
+
+        localStorage.setItem(
+
+            "editEmployee",
+
+            JSON.stringify(emp)
+        );
+
+
+
+
+
+        // OPEN INDEX PAGE IN EDIT MODE
+
+        window.location.href =
+        "index.html?edit=true";
+    }
+
+    catch(error){
+
+        console.log(error);
+
+        alert("Failed To Edit Employee");
+    }
+}
+
+
+
+
+
+
+
+// DELETE EMPLOYEE
+
+async function deleteEmployee(id) {
+
+    const confirmDelete =
+    confirm("Are you sure to delete this employee?");
+
+    if(!confirmDelete){
+
+        return;
+    }
+
+
+
+
+
+
+    try {
+
+        const response =
+        await fetch(
+
+            `http://localhost:5000/deleteEmployee/${id}`,
+
+            {
+                method:"DELETE"
+            }
+        );
+
+        const result =
+        await response.text();
+
+        alert(result);
+
+
+
+
+
+        loadEmployees();
+    }
+
+    catch(error){
+
+        console.log(error);
+
+        alert("Delete Failed");
+    }
+}
+
+
+function searchEmployee() {
+
+    const input =
+    document.getElementById("searchInput")
+    .value
+    .toLowerCase();
+
+    const rows =
+    document.querySelectorAll(".employeeRow");
+
+
+
+
+
+    rows.forEach(row => {
+
+        const text =
+        row.innerText.toLowerCase();
+
+
+
+
+
+        if(text.includes(input)){
+
+            row.style.display = "";
+        }
+
+        else{
+
+            row.style.display = "none";
+        }
+    });
+}
+
+
+
+
+
+
+
+// SEARCH EMPLOYEE
+
+function searchEmployee() {
+
+    const searchValue =
+
+    document.getElementById("searchInput")
+
+    .value
+
+    .toLowerCase();
+
+
+
+
+
+    const filteredEmployees =
+
+    allEmployees.filter(emp => {
+
+        return (
+
+            emp.employeeName
+            .toLowerCase()
+            .includes(searchValue)
+
+            ||
+
+            emp.employeeId
+            .toLowerCase()
+            .includes(searchValue)
+        );
+    });
+
+
+
+
+
+    displayEmployees(filteredEmployees);
+}
+
+
+
+
+
+
+// INITIAL LOAD
+
+loadEmployees();
+
+</script>
+
+</body>
+
+</html>

@@ -1,0 +1,450 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Payslip Generation</title>
+
+    <style>
+
+        body{
+            font-family: Arial;
+            background:#f4f4f4;
+            padding:30px;
+        }
+
+        .container{
+            max-width:850px;
+            margin:auto;
+            background:white;
+            padding:30px;
+            border-radius:10px;
+            box-shadow:0 0 10px rgba(0,0,0,0.1);
+        }
+
+        h1{
+            text-align:center;
+            margin-bottom:25px;
+            color:#333;
+        }
+
+        .form-group{
+            margin-bottom:20px;
+        }
+
+        label{
+            display:block;
+            margin-bottom:8px;
+            font-weight:bold;
+        }
+
+        input, select{
+            width:100%;
+            padding:10px;
+            border:1px solid #ccc;
+            border-radius:5px;
+        }
+
+        .btn-group{
+            display:flex;
+            gap:10px;
+            margin-top:20px;
+            flex-wrap:wrap;
+        }
+
+        button{
+            padding:12px 20px;
+            border:none;
+            color:white;
+            cursor:pointer;
+            border-radius:5px;
+            font-size:15px;
+        }
+
+        .generate-btn{
+            background:green;
+        }
+
+        .print-btn{
+            background:#007bff;
+        }
+
+        .back-btn{
+            background:#333;
+        }
+
+        .payslip{
+            margin-top:30px;
+            border:1px solid #ccc;
+            padding:20px;
+            border-radius:5px;
+        }
+
+        table{
+            width:100%;
+            border-collapse:collapse;
+        }
+
+        td{
+            border:1px solid #ccc;
+            padding:12px;
+        }
+
+        .title-row{
+            background:#007bff;
+            color:white;
+            text-align:center;
+            font-weight:bold;
+        }
+
+        .net-row{
+            background:#28a745;
+            color:white;
+            font-weight:bold;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <a href="index.html">
+        <button class="back-btn">Back</button>
+    </a>
+
+    <h1>Generate Payslip</h1>
+
+    <div class="form-group">
+
+        <label>Select Employee</label>
+
+        <select id="employeeSelect">
+
+            <option value="">Choose Employee</option>
+
+        </select>
+
+    </div>
+
+    <div class="form-group">
+
+        <label>Leave Count</label>
+
+        <input type="number"
+        id="leaveCount"
+        placeholder="Enter leave count">
+
+    </div>
+
+    <div class="btn-group">
+
+        <button class="generate-btn"
+        onclick="generatePayslip()">
+
+            Generate Payslip
+
+        </button>
+
+        <button class="print-btn"
+        onclick="printPayslip()">
+
+            Print Payslip
+
+        </button>
+
+    </div>
+
+    <div class="payslip" id="payslip">
+
+        <h2 style="text-align:center;">
+            Payslip Preview
+        </h2>
+
+    </div>
+
+</div>
+
+<script>
+
+let employeeData = [];
+
+async function loadEmployees() {
+
+    try {
+
+        const response =
+        await fetch("http://localhost:5000/employees");
+
+        employeeData = await response.json();
+
+        const select =
+        document.getElementById("employeeSelect");
+
+        employeeData.forEach(emp => {
+
+            select.innerHTML += `
+
+                <option value="${emp._id}">
+                    ${emp.employeeName} (${emp.employeeId})
+                </option>
+
+            `;
+        });
+
+    } catch(error) {
+
+        console.log(error);
+
+        alert("Failed to load employees");
+    }
+}
+
+function generatePayslip() {
+
+    const employeeId =
+    document.getElementById("employeeSelect").value;
+
+    const leaveCount =
+    parseInt(document.getElementById("leaveCount").value) || 0;
+
+    const employee =
+    employeeData.find(emp => emp._id === employeeId);
+
+    if (!employee) {
+
+        alert("Please Select Employee");
+
+        return;
+    }
+
+    const basicSalary =
+    Number(employee.basicSalary);
+
+
+
+
+
+    // ALLOWANCES
+
+    const hraAmount =
+    (basicSalary * Number(employee.hra)) / 100;
+
+    const daAmount =
+    (basicSalary * Number(employee.da)) / 100;
+
+    const allowanceAmount =
+    (basicSalary * Number(employee.allowances)) / 100;
+
+
+
+
+
+    // GROSS SALARY
+
+    const grossSalary =
+    basicSalary +
+    hraAmount +
+    daAmount +
+    allowanceAmount;
+
+
+
+
+
+    // LEAVE DEDUCTION
+
+    const perDaySalary =
+    grossSalary / 30;
+
+    const leaveDeduction =
+    perDaySalary * leaveCount;
+
+
+
+
+
+    // OTHER DEDUCTIONS
+
+    const esiDeduction =
+    (basicSalary * Number(employee.esi)) / 100;
+
+    const pfDeduction =
+    (basicSalary * Number(employee.pf)) / 100;
+
+
+
+
+
+    // TOTAL DEDUCTION
+
+    const totalDeduction =
+    leaveDeduction +
+    esiDeduction +
+    pfDeduction;
+
+
+
+
+
+    // FINAL NET SALARY
+
+    const finalSalary =
+    grossSalary - totalDeduction;
+
+
+
+
+
+    document.getElementById("payslip").innerHTML = `
+
+    <table>
+
+        <tr class="title-row">
+
+            <td colspan="2">
+                Employee Payslip
+            </td>
+
+        </tr>
+
+
+
+
+
+        <tr>
+            <td><b>Employee Name</b></td>
+            <td>${employee.employeeName}</td>
+        </tr>
+
+        <tr>
+            <td><b>Employee ID</b></td>
+            <td>${employee.employeeId}</td>
+        </tr>
+
+        <tr>
+            <td><b>Designation</b></td>
+            <td>${employee.designation}</td>
+        </tr>
+
+        <tr>
+            <td><b>Joining Date</b></td>
+            <td>${employee.joiningDate}</td>
+        </tr>
+
+
+
+
+
+        <tr class="title-row">
+
+            <td colspan="2">
+                Earnings
+            </td>
+
+        </tr>
+
+        <tr>
+            <td>Basic Salary</td>
+            <td>₹ ${basicSalary.toFixed(2)}</td>
+        </tr>
+
+        <tr>
+            <td>HRA</td>
+            <td>₹ ${hraAmount.toFixed(2)}</td>
+        </tr>
+
+        <tr>
+            <td>DA</td>
+            <td>₹ ${daAmount.toFixed(2)}</td>
+        </tr>
+
+        <tr>
+            <td>Allowance</td>
+            <td>₹ ${allowanceAmount.toFixed(2)}</td>
+        </tr>
+
+        <tr>
+            <td><b>Gross Salary</b></td>
+            <td>
+                <b>₹ ${grossSalary.toFixed(2)}</b>
+            </td>
+        </tr>
+
+
+
+
+
+        <tr class="title-row">
+
+            <td colspan="2">
+                Deductions
+            </td>
+
+        </tr>
+
+        <tr>
+            <td>Leave Count</td>
+            <td>${leaveCount}</td>
+        </tr>
+
+        <tr>
+            <td>Leave Deduction</td>
+            <td>₹ ${leaveDeduction.toFixed(2)}</td>
+        </tr>
+
+        <tr>
+            <td>ESI Deduction</td>
+            <td>₹ ${esiDeduction.toFixed(2)}</td>
+        </tr>
+
+        <tr>
+            <td>PF Deduction</td>
+            <td>₹ ${pfDeduction.toFixed(2)}</td>
+        </tr>
+
+        <tr>
+            <td><b>Total Deduction</b></td>
+            <td>
+                <b>₹ ${totalDeduction.toFixed(2)}</b>
+            </td>
+        </tr>
+
+
+
+
+
+        <tr class="net-row">
+
+            <td>Net Salary</td>
+
+            <td>
+                ₹ ${finalSalary.toFixed(2)}
+            </td>
+
+        </tr>
+
+    </table>
+
+    `;
+}
+
+function printPayslip() {
+
+    window.print();
+}
+
+loadEmployees();
+
+</script>
+
+</body>
+
+</html>
+```

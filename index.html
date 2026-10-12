@@ -1,0 +1,642 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+    content="width=device-width, initial-scale=1.0">
+
+    <title>Employee Payslip System</title>
+
+    <style>
+
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
+            font-family:Arial, sans-serif;
+        }
+
+        body{
+            background:#f4f6f9;
+            padding:40px;
+        }
+
+        .container{
+            max-width:700px;
+            margin:auto;
+            background:white;
+            padding:30px;
+            border-radius:10px;
+            box-shadow:0 0 10px rgba(0,0,0,0.1);
+        }
+
+        h1{
+            text-align:center;
+            margin-bottom:25px;
+            color:#333;
+        }
+
+        .form-group{
+            margin-bottom:18px;
+        }
+
+        label{
+            display:block;
+            margin-bottom:6px;
+            font-weight:bold;
+            color:#444;
+        }
+
+        input{
+            width:100%;
+            padding:10px;
+            border:1px solid #ccc;
+            border-radius:5px;
+            font-size:15px;
+        }
+
+        .row{
+            display:flex;
+            gap:15px;
+        }
+
+        .row .form-group{
+            flex:1;
+        }
+
+        .btn-group{
+            display:flex;
+            gap:10px;
+            margin-top:25px;
+            flex-wrap:wrap;
+        }
+
+        button{
+            padding:12px 20px;
+            border:none;
+            border-radius:5px;
+            cursor:pointer;
+            font-size:15px;
+            color:white;
+        }
+
+        .save-btn{
+            background:#28a745;
+        }
+
+        .view-btn{
+            background:#007bff;
+        }
+
+        .payslip-btn{
+            background:#6f42c1;
+        }
+
+        .clear-btn{
+            background:#dc3545;
+        }
+
+        .logout-btn{
+            background:black;
+        }
+
+        button:hover{
+            opacity:0.9;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>Employee Payslip System</h1>
+
+    <form onsubmit="saveEmployee(event)">
+
+        <div class="form-group">
+
+            <label>Employee Name</label>
+
+            <input
+            type="text"
+            id="name"
+            placeholder="Enter employee name"
+            required>
+
+        </div>
+
+
+
+
+
+        <div class="row">
+
+            <div class="form-group">
+
+                <label>Employee ID</label>
+
+                <input
+                type="text"
+                id="id"
+                placeholder="Enter employee ID"
+                required>
+
+            </div>
+
+
+
+
+
+            <div class="form-group">
+
+                <label>Designation</label>
+
+                <input
+                type="text"
+                id="designation"
+                placeholder="Enter designation"
+                required>
+
+            </div>
+
+        </div>
+
+
+
+
+
+        <div class="form-group">
+
+            <label>Joining Date</label>
+
+            <input
+            type="date"
+            id="joining"
+            required>
+
+        </div>
+
+
+
+
+
+        <div class="form-group">
+
+            <label>Basic Salary</label>
+
+            <input
+            type="number"
+            id="salary"
+            placeholder="Enter basic salary"
+            required>
+
+        </div>
+
+
+
+
+
+        <div class="row">
+
+            <div class="form-group">
+
+                <label>HRA %</label>
+
+                <input
+                type="number"
+                id="hra"
+                placeholder="Enter HRA %"
+                required>
+
+            </div>
+
+
+
+
+
+            <div class="form-group">
+
+                <label>DA %</label>
+
+                <input
+                type="number"
+                id="da"
+                placeholder="Enter DA %"
+                required>
+
+            </div>
+
+        </div>
+
+
+
+
+
+        <div class="form-group">
+
+            <label>Other Allowances %</label>
+
+            <input
+            type="number"
+            id="allowance"
+            placeholder="Enter other allowances %"
+            required>
+
+        </div>
+
+
+
+
+
+        <div class="row">
+
+            <div class="form-group">
+
+                <label>ESI %</label>
+
+                <input
+                type="number"
+                id="esi"
+                placeholder="Enter ESI %"
+                required>
+
+            </div>
+
+
+
+
+
+            <div class="form-group">
+
+                <label>PF %</label>
+
+                <input
+                type="number"
+                id="pf"
+                placeholder="Enter PF %"
+                required>
+
+            </div>
+
+        </div>
+
+
+
+
+
+        <div class="btn-group">
+
+            <button
+            type="submit"
+            class="save-btn"
+            id="submitBtn">
+
+                Save Employee
+
+            </button>
+
+
+
+
+
+            <a href="employees.html">
+
+                <button
+                type="button"
+                class="view-btn">
+
+                    View Employees
+
+                </button>
+
+            </a>
+
+
+
+
+
+            <a href="payslip.html">
+
+                <button
+                type="button"
+                class="payslip-btn">
+
+                    Generate Payslip
+
+                </button>
+
+            </a>
+
+
+
+
+
+            <button
+            type="reset"
+            class="clear-btn">
+
+                Clear
+
+            </button>
+
+
+
+
+
+            <button
+            type="button"
+            class="logout-btn"
+            onclick="logout()">
+
+                Logout
+
+            </button>
+
+        </div>
+
+    </form>
+
+</div>
+
+
+
+
+
+<script>
+
+
+
+
+// LOGIN CHECK
+
+if(localStorage.getItem("isLoggedIn") !== "true"){
+
+    window.location.href = "login.html";
+}
+
+
+
+
+
+let editingEmployeeId = null;
+
+
+
+
+
+
+// LOGOUT
+
+function logout(){
+
+    localStorage.removeItem("isLoggedIn");
+
+    window.location.href = "login.html";
+}
+
+
+
+
+
+
+// LOAD EMPLOYEE DATA
+
+window.onload = function () {
+
+    const params =
+    new URLSearchParams(window.location.search);
+
+    const isEdit =
+    params.get("edit");
+
+
+
+
+
+    // EDIT MODE
+
+    if (isEdit === "true") {
+
+        const editData =
+        localStorage.getItem("editEmployee");
+
+        if (editData) {
+
+            const emp = JSON.parse(editData);
+
+
+
+
+
+            // FILL FORM
+
+            document.getElementById("name").value =
+            emp.employeeName;
+
+            document.getElementById("id").value =
+            emp.employeeId;
+
+            document.getElementById("designation").value =
+            emp.designation;
+
+            document.getElementById("joining").value =
+            emp.joiningDate;
+
+            document.getElementById("salary").value =
+            emp.basicSalary;
+
+            document.getElementById("hra").value =
+            emp.hra;
+
+            document.getElementById("da").value =
+            emp.da;
+
+            document.getElementById("allowance").value =
+            emp.allowances;
+
+            document.getElementById("esi").value =
+            emp.esi;
+
+            document.getElementById("pf").value =
+            emp.pf;
+
+
+
+
+
+            // STORE ID
+
+            editingEmployeeId = emp._id;
+
+
+
+
+
+            // CHANGE BUTTON TEXT
+
+            document.getElementById("submitBtn")
+            .innerText = "Update Employee";
+        }
+    }
+
+
+
+
+
+
+    // CREATE MODE
+
+    else {
+
+        localStorage.removeItem("editEmployee");
+
+        document.getElementById("submitBtn")
+        .innerText = "Save Employee";
+    }
+};
+
+
+
+
+
+
+
+
+// SAVE OR UPDATE EMPLOYEE
+
+async function saveEmployee(event) {
+
+    event.preventDefault();
+
+
+
+
+
+    const data = {
+
+        employeeName:
+        document.getElementById("name").value,
+
+        employeeId:
+        document.getElementById("id").value,
+
+        designation:
+        document.getElementById("designation").value,
+
+        joiningDate:
+        document.getElementById("joining").value,
+
+        basicSalary:
+        document.getElementById("salary").value,
+
+        hra:
+        document.getElementById("hra").value,
+
+        da:
+        document.getElementById("da").value,
+
+        allowances:
+        document.getElementById("allowance").value,
+
+        esi:
+        document.getElementById("esi").value,
+
+        pf:
+        document.getElementById("pf").value
+    };
+
+
+
+
+
+
+    // UPDATE EMPLOYEE
+
+    if (editingEmployeeId) {
+
+        const response = await fetch(
+
+            `http://localhost:5000/updateEmployee/${editingEmployeeId}`,
+
+            {
+
+                method:"PUT",
+
+                headers:{
+                    "Content-Type":"application/json"
+                },
+
+                body:JSON.stringify(data)
+            }
+        );
+
+        const result =
+        await response.text();
+
+        alert(result);
+
+
+
+
+
+        localStorage.removeItem("editEmployee");
+
+
+
+
+
+        window.location.href =
+        "employees.html";
+    }
+
+
+
+
+
+
+    // ADD EMPLOYEE
+
+    else {
+
+        const response = await fetch(
+
+            "http://localhost:5000/addEmployee",
+
+            {
+
+                method:"POST",
+
+                headers:{
+                    "Content-Type":"application/json"
+                },
+
+                body:JSON.stringify(data)
+            }
+        );
+
+        const result =
+        await response.text();
+
+        alert(result);
+
+
+
+
+
+        document.querySelector("form").reset();
+    }
+}
+
+</script>
+
+</body>
+
+</html>
+```
